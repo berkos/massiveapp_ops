@@ -25,5 +25,35 @@ class nagios::server {
       group   => nagios,
       mode    => 640,
       require => [Package["apache2"],Package["nagios3"]];
+   "/etc/nagios3/nagios.cfg":
+      source  => "puppet:///modules/nagios/nagios.cfg",
+      owner   => nagios,
+      group   => nagios,
+      mode    => 644,
+      require => [Package["apache2"],Package["nagios3"]],
+      notify  => [Service["apache2"],Service["nagios3"]];
+    "/var/lib/nagios3/rw":
+      ensure  => directory,
+      owner   => nagios,
+      group   => www-data,
+      mode    => 710,
+      require => Package["nagios3"];
+    "/etc/nagios3/conf.d":
+      source  => "puppet:///modules/nagios/conf.d/",
+      ensure  => directory,
+      owner   => nagios,
+      group   => nagios,
+      mode    => 0644,
+      recurse => true,
+      notify  => Service["nagios3"],
+      require => Package["nagios3"];
+    "/etc/nagios3/conf.d/localhost_nagios2.cfg":
+      ensure  => absent;
+  }  
+  user {
+    "www-data":
+      groups  => "nagios",
+      notify  => Package["apache2"],
+      require => Package["nagios3"],
   }
 }
